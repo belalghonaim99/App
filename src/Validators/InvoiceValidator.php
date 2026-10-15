@@ -7,6 +7,7 @@ use DateTime;
 
 class InvoiceValidator
 {
+
     public function validateAll(array $data) : void 
     {
         $errors = [];
@@ -30,6 +31,7 @@ class InvoiceValidator
         }
         return $errors;
     }
+
     private function validateDate(array $data): array
     {
         $errors = [];
@@ -43,7 +45,7 @@ class InvoiceValidator
         // false first to Short-circuit evaluation
         if( $result === false || $result->format('Y-m-d') !== $value){
 
-            $errors['invoice_date'] = 'Invoice Date Not Match Or Formating Date Error, Date Format must be in (Y-m-d)';
+            $errors['invoice_date'] = 'invoice_date must be a Valid Date must be in (Y-m-d) Format';
         }
         return $errors;
     }
@@ -53,20 +55,21 @@ class InvoiceValidator
         $errors = [];
 
         if(empty($data['items']) || !is_array($data['items'])) {
-            $errors['items'] = 'Items Error';
+            $errors['items'] = 'Items is Required and must contain atleast one item';
+            return $errors;
         }
         foreach($data['items'] as $index => $item)
             {
                 $value = $item['product_id'] ?? null;
                 
-                if($value=== null || $value <= 0) {
-                    $errors["items.$index.product_id"] = 'product_id error';
+                if(!is_int($value) || $value <= 0) {
+                    $errors["items.$index.product_id"] = 'product_id is required and must be Positive Number';
                 }
 
                 $quantity = $item['quantity'] ?? null;
 
-                if($quantity === null || $quantity <= 0) {
-                    $errors["items.$index.quantity"] = 'quantity erorr';
+                if(!is_int($quantity) || $quantity <= 0) {
+                    $errors["items.$index.quantity"] = 'quantity is required and must be Positive number';
                 }
             }
             return $errors;
