@@ -51,4 +51,15 @@ class Invoice
             invoiceNumber: (string)$row['invoice_number'],
         );
     }
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'invoice_number' => $this->invoiceNumber,
+            'customer_id' => $this->customerId,
+            'invoice_date' => $this->invoiceDate,
+            'total' => $this->total,
+            'items' => array_map(fn($item) => $item->toArray(), $this->items)
+        ];
+    }
 }

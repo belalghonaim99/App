@@ -55,4 +55,14 @@ class InvoiceItem
             unitPrice: (float) $row['unit_price'],
         );
     }
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'product_id' => $this->productId,
+            'quantity' => $this->quantity,
+            'unit_price' => $this->unitPrice,
+            'line_total' => $this->lineTotal
+        ];
+    }
 }   

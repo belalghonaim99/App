@@ -6,7 +6,7 @@ use PDO;
 use PDOException;
 use RuntimeException;
 
-class Database
+final class Database
 {
     private static ?PDO $connection = null;
 

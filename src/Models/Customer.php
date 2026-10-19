@@ -16,6 +16,7 @@ class Customer
         $this->name = $name;
         $this->email = $email;
         $this->phone = $phone;
+        $this->createdAt = $createdAt;
     }
     public function getId() : int
     {

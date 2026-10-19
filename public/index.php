@@ -1,41 +1,60 @@
 <?php
 
-require __DIR__ . '/../vendor/autoload.php';
-
-use App\ConnectDataBase\Database;
-use App\Exceptions\ValidationException;
+use App\Core\Database;
 use App\Repositories\CustomerRepository;
 use App\Repositories\InvoiceRepository;
 use App\Repositories\ProductRepository;
 use App\Services\InvoiceService;
 use App\Validators\InvoiceValidator;
+use App\Services\ReportService;
+use App\Validators\ReportValidator;
+use App\Controllers\InvoiceController;
+use App\Controllers\ReportController;
+use App\Core\Response;
+use App\Exceptions\ValidationException;
 
+require __DIR__ . '/../vendor/autoload.php';
+
+
+try{
 $db = Database::getConnection();
 
 $service = new InvoiceService(
-    $db,
+    $db, 
     new CustomerRepository($db),
     new ProductRepository($db),
     new InvoiceRepository($db),
     new InvoiceValidator()
 );
 
-try {
-    $invoice = $service->createInvoice([
-        'customer_id' => 1,
-        'items' => [
-            ['product_id' => 1, 'quantity' => 2],
-            ['product_id' => 2, 'quantity' => 3],
-        ],
-    ]);
+$report = new ReportService(new InvoiceRepository($db), new ReportValidator());
 
-    echo 'Invoice ID: ' . $invoice->getId() . '<br>';
-    echo 'Invoice Number: ' . $invoice->getInvoiceNumber() . '<br>';
-    echo 'Date: ' . $invoice->getInvoiceDate() . '<br>';
-    echo 'Items: ' . count($invoice->getItems()) . '<br>';
-    echo 'Total: ' . $invoice->getTotal();
-} catch (ValidationException $e) {
-    echo '<pre>';
-    print_r($e->getErrors());
-    echo '</pre>';
+$invoiceController = new InvoiceController($service);
+
+$reportController = new ReportController($report);
+
+$method = $_SERVER['REQUEST_METHOD'];
+
+$path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+
+if ($method === 'GET' && $path === '/reports/sales') {
+    $reportController->sales();
+}
+if ($method === 'POST' && $path === '/invoices') {
+    $invoiceController->store();
+}
+if ($method === 'GET' && preg_match('#^/invoices/(\d+)$#', $path, $matches)) {
+    $invoiceController->show((int) $matches[1]);
+}
+Response::json(['message' => 'Route not found'], 404);
+}
+
+catch (ValidationException $e) {
+    Response::json([
+        'message' => $e->getMessage(),
+        'errors'  => $e->getErrors()
+    ], 422);
+}
+catch (Throwable $e) {
+    Response::json(['message' => 'Internal Server Error'], 500);
 }

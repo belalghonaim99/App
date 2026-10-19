@@ -37,7 +37,7 @@ class Product
             (int) $row['id'],
             $row['name'],
             (float)$row['price'],
-            $row('created_at') ?? null
+            $row['created_at'] ?? null
         );
     }
 }
